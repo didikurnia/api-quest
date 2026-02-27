@@ -1,0 +1,10 @@
+# .dockerignore
+.git
+.gitignore
+*.exe
+*.test
+*.out
+.env
+.env.local
+.idea/
+.vscode/

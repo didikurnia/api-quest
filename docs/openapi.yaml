@@ -1,0 +1,318 @@
+openapi: "3.1.0"
+info:
+  title: API Quest
+  description: REST API for the Desent API Quest backend coding challenge.
+  version: 1.0.0
+  contact:
+    name: Didi Kurnia
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+
+paths:
+  /ping:
+    get:
+      summary: Ping
+      description: Health check — returns pong.
+      operationId: ping
+      tags: [Health]
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: pong
+
+  /echo:
+    post:
+      summary: Echo
+      description: Echoes back the JSON body sent in the request.
+      operationId: echo
+      tags: [Echo]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              example:
+                message: hello
+      responses:
+        "200":
+          description: Echoed response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+
+  /auth/token:
+    post:
+      summary: Get Auth Token
+      description: Authenticates with username/password and returns a JWT.
+      operationId: authToken
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+      responses:
+        "200":
+          description: JWT token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /books:
+    get:
+      summary: List Books
+      description: Returns all books. Supports filtering by author and pagination.
+      operationId: listBooks
+      tags: [Books]
+      security:
+        - {}
+        - BearerAuth: []
+      parameters:
+        - name: author
+          in: query
+          description: Filter by author (case-insensitive)
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number (1-indexed)
+          schema:
+            type: integer
+            minimum: 1
+        - name: limit
+          in: query
+          description: Items per page
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: List of books or paginated response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/Book"
+                  - $ref: "#/components/schemas/PaginatedResponse"
+    post:
+      summary: Create Book
+      description: Creates a new book. All fields are required.
+      operationId: createBook
+      tags: [Books]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookRequest"
+      responses:
+        "201":
+          description: Created book
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /books/{id}:
+    get:
+      summary: Get Book
+      description: Returns a single book by ID.
+      operationId: getBook
+      tags: [Books]
+      parameters:
+        - $ref: "#/components/parameters/BookId"
+      responses:
+        "200":
+          description: Book found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "404":
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      summary: Update Book
+      description: Replaces an existing book by ID.
+      operationId: updateBook
+      tags: [Books]
+      parameters:
+        - $ref: "#/components/parameters/BookId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBookRequest"
+      responses:
+        "200":
+          description: Updated book
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      summary: Delete Book
+      description: Deletes a book by ID.
+      operationId: deleteBook
+      tags: [Books]
+      parameters:
+        - $ref: "#/components/parameters/BookId"
+      responses:
+        "204":
+          description: Book deleted
+        "404":
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    BookId:
+      name: id
+      in: path
+      required: true
+      description: Book UUID
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    Book:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        title:
+          type: string
+          example: "The Go Programming Language"
+        author:
+          type: string
+          example: "Alan A. A. Donovan"
+        year:
+          type: integer
+          example: 2015
+
+    CreateBookRequest:
+      type: object
+      required: [title, author, year]
+      properties:
+        title:
+          type: string
+          example: "The Go Programming Language"
+        author:
+          type: string
+          example: "Alan A. A. Donovan"
+        year:
+          type: integer
+          example: 2015
+
+    UpdateBookRequest:
+      type: object
+      required: [title, author, year]
+      properties:
+        title:
+          type: string
+          example: "The Go Programming Language (2nd Ed)"
+        author:
+          type: string
+          example: "Alan A. A. Donovan"
+        year:
+          type: integer
+          example: 2024
+
+    AuthRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          example: admin
+        password:
+          type: string
+          example: password
+
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIs..."
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "book not found"
+
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Book"
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 2
+        total:
+          type: integer
+          example: 10
