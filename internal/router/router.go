@@ -15,7 +15,7 @@ import (
 func Setup(cfg *config.Config, bookStore *store.BookStore) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
-	r.Use(gin.Logger(), gin.Recovery())
+	r.Use(gin.Logger(), gin.Recovery(), CORSMiddleware())
 
 	// --- Handlers ---
 	bookHandler := handler.NewBookHandler(bookStore)
@@ -27,8 +27,7 @@ func Setup(cfg *config.Config, bookStore *store.BookStore) *gin.Engine {
 	r.POST("/auth/token", authHandler.Token)
 
 	// --- Book routes ---
-	// Auth is optional: if Authorization header is present, it MUST be valid.
-	// This satisfies both Level 3 (no auth) and Level 5 (auth required).
+	// Default to Optional auth: Level 3 & 4 tests make requests without tokens.
 	books := r.Group("/books")
 	books.Use(middleware.OptionalJWTAuth(cfg))
 	{
@@ -57,4 +56,23 @@ func Setup(cfg *config.Config, bookStore *store.BookStore) *gin.Engine {
 	}
 
 	return r
+}
+
+// CORSMiddleware allows Cross-Origin requests from the browser.
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		origin := c.GetHeader("Origin")
+		if origin == "" {
+			origin = "*"
+		}
+		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	}
 }

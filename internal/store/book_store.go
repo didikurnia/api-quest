@@ -107,10 +107,9 @@ func (s *BookStore) Search(author string) []model.Book {
 	defer s.mu.RUnlock()
 
 	result := make([]model.Book, 0)
-	authorLower := strings.ToLower(author)
 	for _, id := range s.order {
 		b := s.books[id]
-		if strings.Contains(strings.ToLower(b.Author), authorLower) {
+		if strings.EqualFold(b.Author, author) {
 			result = append(result, b)
 		}
 	}

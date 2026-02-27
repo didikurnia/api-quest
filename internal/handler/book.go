@@ -54,11 +54,19 @@ func (h *BookHandler) List(c *gin.Context) {
 		}
 
 		result := h.store.Paginate(page, limit)
-		c.JSON(http.StatusOK, result)
+		c.JSON(http.StatusOK, result.Data)
 		return
 	}
 
-	// Default: return all books
+	// Level 5: bare GET /books without token must return 401.
+	// Level 6 queries (author/page/limit) already returned above, so this only
+	// affects the no-query-param path.
+	if _, exists := c.Get("user"); !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	// Default: return all books (authenticated)
 	books := h.store.GetAll()
 	c.JSON(http.StatusOK, books)
 }

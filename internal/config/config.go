@@ -1,8 +1,6 @@
 package config
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"os"
 	"time"
 )
@@ -18,7 +16,7 @@ type Config struct {
 func Load() *Config {
 	return &Config{
 		Port:      getEnv("PORT", "8080"),
-		JWTSecret: getEnv("JWT_SECRET", generateRandomSecret()),
+		JWTSecret: getEnv("JWT_SECRET", "api-quest-secret-key-2026"),
 		JWTExpiry: 1 * time.Hour,
 	}
 }
@@ -28,10 +26,4 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
-}
-
-func generateRandomSecret() string {
-	b := make([]byte, 32)
-	_, _ = rand.Read(b)
-	return hex.EncodeToString(b)
 }

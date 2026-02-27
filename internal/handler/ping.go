@@ -9,6 +9,6 @@ import (
 // Ping handles GET /ping — Level 1.
 func Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
+		"success": true,
 	})
 }
