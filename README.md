@@ -2,8 +2,8 @@
 
 A high-performance REST API built with **Go + Gin** for the [Desent API Quest](https://www.desent.io/coding-test-backend) backend coding challenge. Features JWT authentication, in-memory storage, interactive API docs via Scalar, and is deployed on Fly.io.
 
-**Live URL:** [https://api-quest.fly.dev](https://api-quest.fly.dev)
-**API Docs:** [https://api-quest.fly.dev/docs](https://api-quest.fly.dev/docs)
+**Live URL:** [https://api-quest-1045924354339.asia-southeast1.run.app](https://api-quest-1045924354339.asia-southeast1.run.app)
+**API Docs:** [https://api-quest-1045924354339.asia-southeast1.run.app/docs](https://api-quest-1045924354339.asia-southeast1.run.app/docs)
 
 ---
 
